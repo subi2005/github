@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Stratification Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .risk-high { color: #dc3545; }
+        .risk-moderate { color: #ffc107; }
+        .risk-low { color: #28a745; }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .risk-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row bg-primary text-white p-3 mb-4">
+            <div class="col">
+                <h1><i class="fas fa-heartbeat me-2"></i>Risk Stratification Dashboard</h1>
+                <p class="mb-0">Healthcare Risk Prediction & Analytics</p>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row mb-4" id="summary-stats">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h4 id="total-patients">-</h4>
+                        <p class="mb-0">Total Patients</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-2x mb-2"></i>
+                        <h4 id="avg-risk-30d">-</h4>
+                        <p class="mb-0">Avg 30-Day Risk</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <h4 id="high-risk-count">-</h4>
+                        <p class="mb-0">High Risk Patients</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                        <h4 id="low-risk-count">-</h4>
+                        <p class="mb-0">Low Risk Patients</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie me-2"></i>Risk Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="riskChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar me-2"></i>Risk Scores by Time Period</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="riskScoresChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Patient Prediction Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user-plus me-2"></i>New Patient Risk Prediction</h5>
+                    </div>
+                    <div class="card-body">
+                                                 <form id="prediction-form">
+                             <div class="row">
+                                 <div class="col-md-6">
+                                     <div class="mb-3">
+                                         <label for="patient-id" class="form-label">Patient ID (DESYNPUF_ID) *</label>
+                                         <input type="text" class="form-control" id="patient-id" required placeholder="Enter existing patient ID">
+                                         <small class="form-text text-muted">Enter an existing patient ID from the database to predict their risk</small>
+                                     </div>
+                                 </div>
+                                 <div class="col-md-6">
+                                     <div class="mb-3">
+                                         <label class="form-label">Or Create New Patient</label>
+                                         <div class="form-check">
+                                             <input class="form-check-input" type="checkbox" id="new-patient-check">
+                                             <label class="form-check-label" for="new-patient-check">
+                                                 Check this to enter new patient data instead
+                                             </label>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- New Patient Form Fields (initially hidden) -->
+                             <div id="new-patient-fields" style="display: none;">
+                                 <div class="row">
+                                     <div class="col-md-3">
+                                         <div class="mb-3">
+                                             <label for="patient-age" class="form-label">Age *</label>
+                                             <input type="number" class="form-control" id="patient-age" min="18" max="120">
+                                         </div>
+                                     </div>
+                                     <div class="col-md-3">
+                                         <div class="mb-3">
+                                             <label for="patient-gender" class="form-label">Gender *</label>
+                                             <select class="form-select" id="patient-gender">
+                                                 <option value="">Select Gender</option>
+                                                 <option value="1">Male</option>
+                                                 <option value="0">Female</option>
+                                             </select>
+                                         </div>
+                                     </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-bmi" class="form-label">BMI</label>
+                                        <input type="number" class="form-control" id="patient-bmi" step="0.1" min="10" max="60">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-bp-s" class="form-label">Systolic BP</label>
+                                        <input type="number" class="form-control" id="patient-bp-s" min="70" max="250">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-glucose" class="form-label">Glucose</label>
+                                        <input type="number" class="form-control" id="patient-glucose" min="50" max="500">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-hba1c" class="form-label">HbA1c</label>
+                                        <input type="number" class="form-control" id="patient-hba1c" step="0.1" min="3" max="15">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-cholesterol" class="form-label">Cholesterol</label>
+                                        <input type="number" class="form-control" id="patient-cholesterol" min="100" max="400">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-claims-cost" class="form-label">Total Claims Cost</label>
+                                        <input type="number" class="form-control" id="patient-claims-cost" min="0" step="100">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-in-adm" class="form-label">Inpatient Admissions</label>
+                                        <input type="number" class="form-control" id="patient-in-adm" min="0" max="20">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-out-visits" class="form-label">Outpatient Visits</label>
+                                        <input type="number" class="form-control" id="patient-out-visits" min="0" max="50">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-ed-visits" class="form-label">ED Visits</label>
+                                        <input type="number" class="form-control" id="patient-ed-visits" min="0" max="20">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="patient-rx-adh" class="form-label">Medication Adherence</label>
+                                        <input type="number" class="form-control" id="patient-rx-adh" step="0.01" min="0" max="1">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chronic Conditions -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="mb-3">Chronic Conditions (Check if present)</h6>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-alzheimer">
+                                        <label class="form-check-label" for="patient-alzheimer">Alzheimer's</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-heartfailure">
+                                        <label class="form-check-label" for="patient-heartfailure">Heart Failure</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-cancer">
+                                        <label class="form-check-label" for="patient-cancer">Cancer</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-pulmonary">
+                                        <label class="form-check-label" for="patient-pulmonary">Pulmonary Disease</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-osteoporosis">
+                                        <label class="form-check-label" for="patient-osteoporosis">Osteoporosis</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-rheumatoid">
+                                        <label class="form-check-label" for="patient-rheumatoid">Rheumatoid Arthritis</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-stroke">
+                                        <label class="form-check-label" for="patient-stroke">Stroke</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="patient-renal-disease">
+                                        <label class="form-check-label" for="patient-renal-disease">Renal Disease</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-calculator me-2"></i>Predict Risk
+                                    </button>
+                                    <button type="button" class="btn btn-secondary ms-2" onclick="clearForm()">
+                                        <i class="fas fa-eraser me-2"></i>Clear Form
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Prediction Results -->
+                        <div id="prediction-results" class="mt-4" style="display: none;">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Prediction Results</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5 class="text-primary">30-Day Risk</h5>
+                                                <div class="display-6 fw-bold" id="pred-risk-30d">-</div>
+                                                <span class="badge" id="pred-risk-30d-badge">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5 class="text-primary">60-Day Risk</h5>
+                                                <div class="display-6 fw-bold" id="pred-risk-60d">-</div>
+                                                <span class="badge" id="pred-risk-60d-badge">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5 class="text-primary">90-Day Risk</h5>
+                                                <div class="display-6 fw-bold" id="pred-risk-90d">-</div>
+                                                <span class="badge" id="pred-risk-90d-badge">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5 class="text-primary">Risk Label</h5>
+                                                <div class="display-6 fw-bold" id="pred-risk-label">-</div>
+                                                <span class="badge" id="pred-risk-label-badge">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <h6>Top Risk Factors:</h6>
+                                            <p id="pred-top-features" class="text-muted">-</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>AI Recommendations:</h6>
+                                            <p id="pred-ai-recommendations" class="text-primary fw-bold">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Data Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-table me-2"></i>Patient Risk Data</h5>
+                        <div>
+                            <select id="limit-select" class="form-select form-select-sm d-inline-block w-auto">
+                                <option value="50">50 Patients</option>
+                                <option value="100" selected>100 Patients</option>
+                                <option value="200">200 Patients</option>
+                                <option value="500">500 Patients</option>
+                            </select>
+                                                         <button class="btn btn-primary btn-sm ms-2" onclick="loadData()">
+                                 <i class="fas fa-sync-alt"></i> Refresh
+                             </button>
+                             <button class="btn btn-success btn-sm ms-2" onclick="exportPDF()">
+                                 <i class="fas fa-file-pdf"></i> Export PDF
+                             </button>
+                             <button class="btn btn-warning btn-sm ms-2" onclick="predictAllPatients()">
+                                 <i class="fas fa-calculator"></i> Predict All Patients
+                             </button>
+                             <button class="btn btn-info btn-sm ms-2" onclick="sendBulkEmails()">
+                                 <i class="fas fa-envelope"></i> Send Bulk Emails
+                             </button>
+                         </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="loading" id="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading patient data...</p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="patient-table">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Patient ID</th>
+                                        <th>Age</th>
+                                        <th>Gender</th>
+                                        <th>Claims Cost</th>
+                                        <th>30D Risk</th>
+                                        <th>60D Risk</th>
+                                        <th>90D Risk</th>
+                                                                                 <th>Risk Label</th>
+                                         <th>Top Features</th>
+                                         <th>AI Recommendations</th>
+                                     </tr>
+                                </thead>
+                                <tbody id="patient-tbody">
+                                    <!-- Data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let riskChart, riskScoresChart;
+
+        // Load summary statistics
+        async function loadSummary() {
+            try {
+                const response = await fetch('/api/summary');
+                const data = await response.json();
+                
+                document.getElementById('total-patients').textContent = data.total_patients?.toLocaleString() || '-';
+                document.getElementById('avg-risk-30d').textContent = data.avg_risk_30d?.toFixed(1) || '-';
+                document.getElementById('high-risk-count').textContent = 
+                    ((data.very_high_risk || 0) + (data.high_risk || 0)).toLocaleString();
+                document.getElementById('low-risk-count').textContent = 
+                    ((data.low_risk || 0) + (data.very_low_risk || 0)).toLocaleString();
+                
+                // Create risk distribution chart
+                createRiskChart(data);
+                createRiskScoresChart(data);
+            } catch (error) {
+                console.error('Error loading summary:', error);
+            }
+        }
+
+        // Load patient data
+        async function loadData() {
+            const limit = document.getElementById('limit-select').value;
+            const loading = document.getElementById('loading');
+            const tbody = document.getElementById('patient-tbody');
+            
+            loading.style.display = 'block';
+            tbody.innerHTML = '';
+            
+            try {
+                const response = await fetch(`/api/data?limit=${limit}`);
+                const result = await response.json();
+                
+                if (result.error) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">${result.error}</td></tr>`;
+                    return;
+                }
+                
+                // Count patients with emails
+                let patientsWithEmails = 0;
+                result.data.forEach(patient => {
+                    if (patient.email && patient.email.trim() !== '') {
+                        patientsWithEmails++;
+                    }
+                });
+                
+                // Show email status
+                if (patientsWithEmails > 0) {
+                    console.log(`📧 Loaded ${patientsWithEmails} patients with email addresses`);
+                }
+                
+                result.data.forEach(patient => {
+                    const row = document.createElement('tr');
+                                         row.innerHTML = `
+                         <td><code>${patient.patient_id}</code></td>
+                         <td>${patient.age}</td>
+                         <td>${patient.gender}</td>
+                         <td>$${patient.claims_cost.toLocaleString()}</td>
+                         <td><span class="badge bg-${getRiskColor(patient.risk_30d)}">${patient.risk_30d}</span></td>
+                         <td><span class="badge bg-${getRiskColor(patient.risk_60d)}">${patient.risk_60d}</span></td>
+                         <td><span class="badge bg-${getRiskColor(patient.risk_90d)}">${patient.risk_90d}</span></td>
+                                                  <td><span class="risk-badge bg-${getRiskLabelColor(patient.risk_label)}">${patient.risk_label}</span></td>
+                          <td><small class="text-muted">${patient.top_features}</small></td>
+                                                     <td>
+                               <small class="text-primary fw-bold">${patient.ai_recommendations}</small>
+                               <div class="mt-1">
+                                   <div class="input-group input-group-sm mb-1">
+                                       <input type="email" class="form-control form-control-sm" 
+                                              id="email-${patient.patient_id}" 
+                                              placeholder="Enter email" 
+                                              value="${patient.email || ''}"
+                                              style="font-size: 0.75rem; ${patient.email ? 'border-color: #28a745;' : ''}"
+                                              title="${patient.email ? 'Email loaded from database' : 'No email on file'}">
+                                       <button class="btn btn-sm btn-outline-secondary" 
+                                               onclick="updatePatientEmail('${patient.patient_id}')" 
+                                               title="Update Email">
+                                           <i class="fas fa-save"></i>
+                                       </button>
+                                   </div>
+                                   <div class="btn-group btn-group-sm" role="group">
+                                       <button class="btn btn-sm btn-outline-primary" 
+                                               onclick="sendPatientEmail('${patient.patient_id}')" 
+                                               title="Send Email">
+                                           <i class="fas fa-envelope"></i>
+                                       </button>
+                                       <button class="btn btn-sm btn-outline-info" 
+                                               onclick="sendPDFEmail('${patient.patient_id}')" 
+                                               title="Send PDF via Email">
+                                           <i class="fas fa-file-pdf"></i> 📧
+                                       </button>
+                                       <button class="btn btn-sm btn-outline-success" 
+                                               onclick="downloadPatientPDF('${patient.patient_id}')" 
+                                               title="Download PDF">
+                                           <i class="fas fa-download"></i>
+                                       </button>
+                                   </div>
+                               </div>
+                           </td>
+                      `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading data</td></tr>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function getRiskColor(risk) {
+            if (risk >= 80) return 'danger';
+            if (risk >= 60) return 'warning';
+            if (risk >= 40) return 'info';
+            return 'success';
+        }
+
+        function getRiskLabelColor(label) {
+            if (label.includes('Very High') || label.includes('High')) return 'danger';
+            if (label.includes('Moderate')) return 'warning';
+            return 'success';
+        }
+
+        function createRiskChart(data) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            if (riskChart) riskChart.destroy();
+            
+            riskChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Very High Risk', 'High Risk', 'Moderate Risk', 'Low Risk', 'Very Low Risk'],
+                    datasets: [{
+                        data: [
+                            data.very_high_risk || 0,
+                            data.high_risk || 0,
+                            data.moderate_risk || 0,
+                            data.low_risk || 0,
+                            data.very_low_risk || 0
+                        ],
+                        backgroundColor: [
+                            '#dc3545',
+                            '#fd7e14',
+                            '#ffc107',
+                            '#20c997',
+                            '#28a745'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createRiskScoresChart(data) {
+            const ctx = document.getElementById('riskScoresChart').getContext('2d');
+            
+            if (riskScoresChart) riskScoresChart.destroy();
+            
+            riskScoresChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['30-Day Risk', '60-Day Risk', '90-Day Risk'],
+                    datasets: [{
+                        label: 'Average Risk Score',
+                        data: [
+                            data.avg_risk_30d || 0,
+                            data.avg_risk_60d || 0,
+                            data.avg_risk_90d || 0
+                        ],
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
+                        borderColor: ['#667eea', '#764ba2', '#f093fb'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+                 // Patient Prediction Functions
+         document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+             e.preventDefault();
+             await predictPatient();
+         });
+
+         // Toggle new patient form fields
+         document.getElementById('new-patient-check').addEventListener('change', function() {
+             const newPatientFields = document.getElementById('new-patient-fields');
+             const patientIdField = document.getElementById('patient-id');
+             
+             if (this.checked) {
+                 newPatientFields.style.display = 'block';
+                 patientIdField.required = false;
+                 patientIdField.disabled = true;
+             } else {
+                 newPatientFields.style.display = 'none';
+                 patientIdField.required = true;
+                 patientIdField.disabled = false;
+             }
+         });
+
+         async function predictPatient() {
+             const form = document.getElementById('prediction-form');
+             const submitBtn = form.querySelector('button[type="submit"]');
+             const originalText = submitBtn.innerHTML;
+             const isNewPatient = document.getElementById('new-patient-check').checked;
+             
+             try {
+                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Predicting...';
+                 submitBtn.disabled = true;
+                 
+                 let patientData = {};
+                 
+                 if (isNewPatient) {
+                     // New patient data
+                     patientData = {
+                         DESYNPUF_ID: `NEW_${Date.now()}`,
+                         AGE: parseInt(document.getElementById('patient-age').value) || 0,
+                         GENDER: parseInt(document.getElementById('patient-gender').value) || 0,
+                         BMI: parseFloat(document.getElementById('patient-bmi').value) || 0,
+                         BP_S: parseFloat(document.getElementById('patient-bp-s').value) || 0,
+                         GLUCOSE: parseFloat(document.getElementById('patient-glucose').value) || 0,
+                         HbA1c: parseFloat(document.getElementById('patient-hba1c').value) || 0,
+                         CHOLESTEROL: parseFloat(document.getElementById('patient-cholesterol').value) || 0,
+                         TOTAL_CLAIMS_COST: parseFloat(document.getElementById('patient-claims-cost').value) || 0,
+                         IN_ADM: parseInt(document.getElementById('patient-in-adm').value) || 0,
+                         OUT_VISITS: parseInt(document.getElementById('patient-out-visits').value) || 0,
+                         ED_VISITS: parseInt(document.getElementById('patient-ed-visits').value) || 0,
+                         RX_ADH: parseFloat(document.getElementById('patient-rx-adh').value) || 0,
+                         ALZHEIMER: document.getElementById('patient-alzheimer').checked ? 1 : 0,
+                         HEARTFAILURE: document.getElementById('patient-heartfailure').checked ? 1 : 0,
+                         CANCER: document.getElementById('patient-cancer').checked ? 1 : 0,
+                         PULMONARY: document.getElementById('patient-pulmonary').checked ? 1 : 0,
+                         OSTEOPOROSIS: document.getElementById('patient-osteoporosis').checked ? 1 : 0,
+                         RHEUMATOID: document.getElementById('patient-rheumatoid').checked ? 1 : 0,
+                         STROKE: document.getElementById('patient-stroke').checked ? 1 : 0,
+                         RENAL_DISEASE: document.getElementById('patient-renal-disease').checked ? 1 : 0
+                     };
+                 } else {
+                     // Existing patient - just send the ID
+                     patientData = {
+                         DESYNPUF_ID: document.getElementById('patient-id').value.trim()
+                     };
+                 }
+                 
+                 // Send prediction request
+                 const response = await fetch('/api/predict', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json'
+                     },
+                     body: JSON.stringify(patientData)
+                 });
+                 
+                 const result = await response.json();
+                 
+                 if (result.success) {
+                     displayPredictionResults(result.predictions);
+                     if (result.message) {
+                         alert(result.message);
+                     }
+                     // Refresh the patient table to show updated data
+                     loadData();
+                 } else {
+                     alert(`Prediction failed: ${result.error || 'Unknown error'}`);
+                 }
+                 
+             } catch (error) {
+                 console.error('Prediction error:', error);
+                 alert('Prediction failed. Please try again.');
+             } finally {
+                 submitBtn.innerHTML = originalText;
+                 submitBtn.disabled = false;
+             }
+         }
+
+                   async function predictAllPatients() {
+              const button = event.target;
+              const originalText = button.innerHTML;
+              
+              try {
+                  button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                  button.disabled = true;
+                  
+                  const response = await fetch('/api/predict-all', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      }
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      alert(`Success! ${result.message}`);
+                      // Refresh the patient table to show updated data
+                      loadData();
+                      loadSummary();
+                  } else {
+                      alert(`Operation failed: ${result.error || result.message || 'Unknown error'}`);
+                  }
+                  
+              } catch (error) {
+                  console.error('Bulk prediction error:', error);
+                  alert('Bulk prediction failed. Please try again.');
+              } finally {
+                  button.innerHTML = originalText;
+                  button.disabled = false;
+              }
+          }
+
+          async function updatePatientEmail(patientId) {
+              const emailInput = document.getElementById(`email-${patientId}`);
+              const email = emailInput.value.trim();
+              
+              if (!email) {
+                  alert('Please enter an email address');
+                  return;
+              }
+              
+              // Basic email validation
+              const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailPattern.test(email)) {
+                  alert('Please enter a valid email address');
+                  return;
+              }
+              
+              try {
+                  const response = await fetch('/api/update-patient-email', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ 
+                          patient_id: patientId, 
+                          email: email 
+                      })
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      alert(`Email updated successfully! ${result.message}`);
+                      // Refresh the data to show updated email
+                      loadData();
+                  } else {
+                      alert(`Email update failed: ${result.error || result.message}`);
+                  }
+                  
+              } catch (error) {
+                  console.error('Email update error:', error);
+                  alert('Email update failed. Please try again.');
+              }
+          }
+
+          async function sendPatientEmail(patientId) {
+              try {
+                  const response = await fetch('/api/send-recommendations-email', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ patient_id: patientId })
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      alert(`Email sent successfully! ${result.message}`);
+                  } else {
+                      alert(`Email sending failed: ${result.message}`);
+                  }
+                  
+              } catch (error) {
+                  console.error('Email sending error:', error);
+                  alert('Email sending failed. Please try again.');
+              }
+          }
+
+          async function sendPDFEmail(patientId) {
+              try {
+                  const response = await fetch('/api/send-pdf-email', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ patient_id: patientId })
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      alert(`PDF report sent successfully! ${result.message}`);
+                  } else {
+                      alert(`PDF email sending failed: ${result.message}`);
+                  }
+                  
+              } catch (error) {
+                  console.error('PDF email sending error:', error);
+                  alert('PDF email sending failed. Please try again.');
+              }
+          }
+
+          async function downloadPatientPDF(patientId) {
+              try {
+                  const response = await fetch(`/api/export-patient-pdf/${patientId}`);
+                  
+                  if (response.ok) {
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `patient_recommendations_${patientId}_${new Date().toISOString().slice(0,10)}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      document.body.removeChild(a);
+                  } else {
+                      const error = await response.json();
+                      alert(`PDF download failed: ${error.error || 'Unknown error'}`);
+                  }
+                  
+              } catch (error) {
+                  console.error('PDF download error:', error);
+                  alert('PDF download failed. Please try again.');
+              }
+          }
+
+          async function sendBulkEmails() {
+              const button = event.target;
+              const originalText = button.innerHTML;
+              
+              try {
+                  button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                  button.disabled = true;
+                  
+                  const response = await fetch('/api/send-bulk-emails', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      }
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                      alert(`Success! ${result.message}`);
+                  } else {
+                      alert(`Bulk email sending failed: ${result.error || result.message || 'Unknown error'}`);
+                  }
+                  
+              } catch (error) {
+                  console.error('Bulk email sending error:', error);
+                  alert('Bulk email sending failed. Please try again.');
+              } finally {
+                  button.innerHTML = originalText;
+                  button.disabled = false;
+              }
+          }
+
+         function displayPredictionResults(predictions) {
+             // Display risk scores
+             document.getElementById('pred-risk-30d').textContent = predictions.RISK_30D;
+             document.getElementById('pred-risk-60d').textContent = predictions.RISK_60D;
+             document.getElementById('pred-risk-90d').textContent = predictions.RISK_90D;
+             document.getElementById('pred-risk-label').textContent = predictions.RISK_LABEL;
+             
+             // Set badge colors
+             const risk30dBadge = document.getElementById('pred-risk-30d-badge');
+             const risk60dBadge = document.getElementById('pred-risk-60d-badge');
+             const risk90dBadge = document.getElementById('pred-risk-90d-badge');
+             const riskLabelBadge = document.getElementById('pred-risk-label-badge');
+             
+             risk30dBadge.textContent = getRiskLevel(predictions.RISK_30D);
+             risk30dBadge.className = `badge bg-${getRiskColor(predictions.RISK_30D)}`;
+             
+             risk60dBadge.textContent = getRiskLevel(predictions.RISK_60D);
+             risk60dBadge.className = `badge bg-${getRiskColor(predictions.RISK_60D)}`;
+             
+             risk90dBadge.textContent = getRiskLevel(predictions.RISK_90D);
+             risk90dBadge.className = `badge bg-${getRiskColor(predictions.RISK_90D)}`;
+             
+             riskLabelBadge.textContent = predictions.RISK_LABEL;
+             riskLabelBadge.className = `badge bg-${getRiskLabelColor(predictions.RISK_LABEL)}`;
+             
+             // Display additional information
+             document.getElementById('pred-top-features').textContent = predictions.TOP_3_FEATURES || 'N/A';
+             document.getElementById('pred-ai-recommendations').textContent = predictions.AI_RECOMMENDATIONS || 'Continue current care plan';
+             
+             // Show results
+             document.getElementById('prediction-results').style.display = 'block';
+             
+             // Scroll to results
+             document.getElementById('prediction-results').scrollIntoView({ behavior: 'smooth' });
+         }
+
+         function getRiskLevel(risk) {
+             if (risk >= 80) return 'Very High';
+             if (risk >= 60) return 'High';
+             if (risk >= 40) return 'Moderate';
+             return 'Low';
+         }
+
+         function clearForm() {
+             document.getElementById('prediction-form').reset();
+             document.getElementById('prediction-results').style.display = 'none';
+             document.getElementById('new-patient-fields').style.display = 'none';
+             document.getElementById('patient-id').disabled = false;
+             document.getElementById('patient-id').required = true;
+         }
+
+         // Export PDF function
+         async function exportPDF() {
+             const limit = document.getElementById('limit-select').value;
+             const button = event.target;
+             const originalText = button.innerHTML;
+             
+             try {
+                 button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                 button.disabled = true;
+                 
+                 const response = await fetch(`/api/export-pdf?limit=${limit}`);
+                 
+                 if (response.ok) {
+                     const blob = await response.blob();
+                     const url = window.URL.createObjectURL(blob);
+                     const a = document.createElement('a');
+                     a.href = url;
+                     a.download = `risk_stratification_report_${new Date().toISOString().slice(0,10)}.pdf`;
+                     document.body.appendChild(a);
+                     a.click();
+                     window.URL.revokeObjectURL(url);
+                     document.body.removeChild(a);
+                 } else {
+                     const error = await response.json();
+                     alert(`Export failed: ${error.error || 'Unknown error'}`);
+                 }
+             } catch (error) {
+                 console.error('Export error:', error);
+                 alert('Export failed. Please try again.');
+             } finally {
+                 button.innerHTML = originalText;
+                 button.disabled = false;
+             }
+         }
+
+         // Initialize dashboard
+         document.addEventListener('DOMContentLoaded', function() {
+             loadSummary();
+             loadData();
+             
+             // Add event listener for limit select
+             document.getElementById('limit-select').addEventListener('change', loadData);
+         });
+    </script>
+</body>
+</html>

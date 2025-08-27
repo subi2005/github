@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/602254366314732403
+creation_time: 1756146248851
+experiment_id: '602254366314732403'
+last_update_time: 1756146248851
+lifecycle_stage: active
+name: risk_prediction_experiment

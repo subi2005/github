@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/602254366314732403/models/m-064db227cb584751bb63b61159587e44/artifacts
+creation_timestamp: 1756146251903
+experiment_id: '602254366314732403'
+last_updated_timestamp: 1756146284381
+model_id: m-064db227cb584751bb63b61159587e44
+model_type: ''
+name: risk_model
+source_run_id: 3b836d2ccc534627896cf15e73ea962c
+status: 2
+status_message: null

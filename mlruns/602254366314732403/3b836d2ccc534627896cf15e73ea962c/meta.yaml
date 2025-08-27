@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/602254366314732403/3b836d2ccc534627896cf15e73ea962c/artifacts
+end_time: 1756146284597
+entry_point_name: ''
+experiment_id: '602254366314732403'
+lifecycle_stage: active
+run_id: 3b836d2ccc534627896cf15e73ea962c
+run_name: rf_simple_regularized
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1756146249741
+status: 3
+tags: []
+user_id: SAIBABA
