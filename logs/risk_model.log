@@ -386,3 +386,4 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
 2025-08-28 20:02:00.045 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
 2025-08-28 20:02:44.613 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
 2025-08-28 20:19:24.726 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 20:20:20.786 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
