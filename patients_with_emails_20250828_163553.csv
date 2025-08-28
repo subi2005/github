@@ -1,0 +1,19 @@
+Patient_ID,Age,Gender,Risk_30D,Risk_Level,Top_Features,AI_Recommendations,Email
+7C04F6D97F5A2815,84,Male,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",1. Cardiology consultation for heart failure management | 2. Implement sodium-restricted diet | 3. Daily weight monitoring recommended,test@example.com
+E6AA96909B32C718,95,Male,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk2@example.com
+5865716A24D1720E,101,Male,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk3@example.com
+8C4D8DE21B793BD6,84,Female,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk4@example.com
+81C208118EDDE7E6,98,Male,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk5@example.com
+88BFC169194033E6,94,Male,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk6@example.com
+660CE6AD58F2A1B9,108,Female,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk7@example.com
+7C96CFA821B966BD,79,Female,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk8@example.com
+2E686132935B399E,92,Female,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk9@example.com
+5FCB91DCDFF6E249,84,Female,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk10@example.com
+8C4D8DE21B793BD6,84,Female,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk4@example.com
+81C208118EDDE7E6,98,Male,99.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,highrisk5@example.com
+773019E10716D9AE,87,Female,96.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,patient3@example.com
+773019E10716D9AE,87,Female,96.0,Very High Risk,"COMOR_COUNT, HEARTFAILURE, ALZHEIMER",,patient3@example.com
+E78BFA312B74BEA0,84,Male,73.0,High Risk,"COMOR_COUNT, GLUCOSE, BP_S",,patient5@example.com
+57EBC725A3C001F4,99,Male,69.0,High Risk,"COMOR_COUNT, HbA1c, GLUCOSE",,patient2@example.com
+EA1EB4CAB416BF1A,83,Female,58.0,Moderate Risk,"COMOR_COUNT, GLUCOSE, HbA1c",,patient4@example.com
+43F5E96596112792,83,Male,48.0,Moderate Risk,"COMOR_COUNT, GLUCOSE, HbA1c",,patient1@example.com

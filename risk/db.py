@@ -150,10 +150,12 @@ def update_patient_email(patient_id, email):
             WHERE DESYNPUF_ID = :patient_id
         """)
         
-        engine.execute(update_query, {
-            "email": email,
-            "patient_id": patient_id
-        })
+        with engine.connect() as conn:
+            conn.execute(update_query, {
+                "email": email,
+                "patient_id": patient_id
+            })
+            conn.commit()
         
         logger.info(f"Email updated for patient {patient_id}: {email}")
         return True
@@ -171,13 +173,14 @@ def get_patient_by_id(patient_id):
             WHERE DESYNPUF_ID = :patient_id
         """)
         
-        result = engine.execute(query, {"patient_id": patient_id})
-        row = result.fetchone()
-        
-        if row:
-            return dict(row)
-        else:
-            return None
+        with engine.connect() as conn:
+            result = conn.execute(query, {"patient_id": patient_id})
+            row = result.fetchone()
+            
+            if row:
+                return dict(row)
+            else:
+                return None
             
     except Exception as e:
         logger.error(f"Error getting patient {patient_id}: {e}")

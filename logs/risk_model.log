@@ -340,3 +340,49 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
 2025-08-27 23:14:13.806 | ERROR    | risk.db:update_patient_email:162 - Error updating email for patient 7C04F6D97F5A2815: 'Engine' object has no attribute 'execute'
 2025-08-27 23:15:20.115 | ERROR    | risk.db:update_patient_email:162 - Error updating email for patient 7C04F6D97F5A2815: 'Engine' object has no attribute 'execute'
 2025-08-27 23:15:51.668 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:24:45.488 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:25:21.063 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:25:21.914 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:25:52.447 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:43:15.706 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:43:31.786 | ERROR    | risk.db:update_patient_email:162 - Error updating email for patient 7C04F6D97F5A2815: 'Engine' object has no attribute 'execute'
+2025-08-27 23:45:54.516 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:47:03.267 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:50:47.512 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:51:10.146 | ERROR    | risk.db:update_patient_email:162 - Error updating email for patient 7C04F6D97F5A2815: 'Engine' object has no attribute 'execute'
+2025-08-27 23:53:07.846 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:53:10.336 | ERROR    | risk.db:update_patient_email:162 - Error updating email for patient 7C04F6D97F5A2815: 'Engine' object has no attribute 'execute'
+2025-08-27 23:53:32.153 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:55:22.691 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-27 23:55:27.921 | INFO     | risk.db:update_patient_email:160 - Email updated for patient 7C04F6D97F5A2815: test-update@example.com
+2025-08-27 23:55:45.029 | INFO     | risk.db:update_patient_email:160 - Email updated for patient 7C04F6D97F5A2815: test@example.com
+2025-08-27 23:59:59.543 | ERROR    | risk.email_service:send_recommendations_email:121 - Error sending email to test@example.com: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-3278c26c543sm1313966a91.28 - gsmtp')
+2025-08-28 00:03:33.725 | INFO     | __main__:predict_single:119 - Prediction completed for new patient: {'DESYNPUF_ID': 'NEW_1756319612507', 'RISK_30D': 96, 'RISK_60D': 97, 'RISK_90D': 96, 'RISK_LABEL': 'Very High Risk', 'TOP_3_FEATURES': 'COMOR_COUNT, HEARTFAILURE, ALZHEIMER', 'AI_RECOMMENDATIONS': '1. Cardiology consultation for heart failure management | 2. Implement sodium-restricted diet | 3. Daily weight monitoring recommended'}
+2025-08-28 00:04:20.565 | INFO     | risk.db:update_patient_email:160 - Email updated for patient 660CE6AD58F2A1B9: highrisk7@example.com
+2025-08-28 00:06:26.834 | ERROR    | risk.db:get_patient_by_id:186 - Error getting patient 7C04F6D97F5A2815: dictionary update sequence element #0 has length 16; 2 is required
+2025-08-28 00:13:20.881 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:03:48.311 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:03:58.150 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:07:38.759 | INFO     | __main__:predict_single:119 - Prediction completed for new patient: {'DESYNPUF_ID': 'NEW_1756377458293', 'RISK_30D': 82, 'RISK_60D': 83, 'RISK_90D': 86, 'RISK_LABEL': 'High Risk', 'TOP_3_FEATURES': 'COMOR_COUNT, ALZHEIMER, AGE', 'AI_RECOMMENDATIONS': '1. Neurological consultation for cognitive assessment | 2. Implement memory support strategies | 3. Review medication interactions'}
+2025-08-28 16:15:15.893 | INFO     | __main__:predict_single:119 - Prediction completed for new patient: {'DESYNPUF_ID': 'NEW_1756377915467', 'RISK_30D': 19, 'RISK_60D': 19, 'RISK_90D': 19, 'RISK_LABEL': 'Very Low Risk', 'TOP_3_FEATURES': 'COMOR_COUNT, AGE, GLUCOSE', 'AI_RECOMMENDATIONS': '1. Continue preventive care routine | 2. Annual wellness visit recommended | 3. Maintain healthy lifestyle practices'}
+2025-08-28 16:19:44.426 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:20:11.476 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:20:55.135 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:22:57.098 | ERROR    | risk.email_service:send_recommendations_email:121 - Error sending email to test@example.com: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d2e1a72fcca58-771ebabeeffsm9706357b3a.30 - gsmtp')
+2025-08-28 16:22:57.099 | INFO     | risk.email_service:send_bulk_recommendations_emails:136 - Bulk email sending completed: 0/1 high-risk patients
+2025-08-28 16:30:41.199 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:30:50.351 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:30:50.489 | INFO     | __main__:predict_single:126 - New patient data saved to database: NEW_TEST_1756378838
+2025-08-28 16:30:50.558 | SUCCESS  | risk.db:update_predictions_in_db:89 - Predictions updated successfully in DB
+2025-08-28 16:30:50.561 | INFO     | __main__:predict_single:137 - Prediction completed and saved for new patient: {'DESYNPUF_ID': 'NEW_TEST_1756378838', 'RISK_30D': 76, 'RISK_60D': 79, 'RISK_90D': 81, 'RISK_LABEL': 'High Risk', 'TOP_3_FEATURES': 'ALZHEIMER, GLUCOSE, COMOR_COUNT', 'AI_RECOMMENDATIONS': '1. Neurological consultation for cognitive assessment | 2. Implement memory support strategies | 3. Review medication interactions'}
+2025-08-28 16:31:20.133 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:33:22.484 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 16:37:51.463 | INFO     | __main__:predict_single:126 - New patient data saved to database: NEW_1756379271064
+2025-08-28 16:37:51.595 | SUCCESS  | risk.db:update_predictions_in_db:89 - Predictions updated successfully in DB
+2025-08-28 16:37:51.596 | INFO     | __main__:predict_single:137 - Prediction completed and saved for new patient: {'DESYNPUF_ID': 'NEW_1756379271064', 'RISK_30D': 19, 'RISK_60D': 19, 'RISK_90D': 19, 'RISK_LABEL': 'Very Low Risk', 'TOP_3_FEATURES': 'COMOR_COUNT, AGE, GLUCOSE', 'AI_RECOMMENDATIONS': '1. Continue preventive care routine | 2. Annual wellness visit recommended | 3. Maintain healthy lifestyle practices'}
+2025-08-28 16:38:19.378 | INFO     | __main__:predict_single:126 - New patient data saved to database: NEW_1756379299025
+2025-08-28 16:38:19.438 | SUCCESS  | risk.db:update_predictions_in_db:89 - Predictions updated successfully in DB
+2025-08-28 16:38:19.438 | INFO     | __main__:predict_single:137 - Prediction completed and saved for new patient: {'DESYNPUF_ID': 'NEW_1756379299025', 'RISK_30D': 19, 'RISK_60D': 19, 'RISK_90D': 19, 'RISK_LABEL': 'Very Low Risk', 'TOP_3_FEATURES': 'COMOR_COUNT, AGE, GLUCOSE', 'AI_RECOMMENDATIONS': '1. Continue preventive care routine | 2. Annual wellness visit recommended | 3. Maintain healthy lifestyle practices'}
+2025-08-28 20:02:00.045 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 20:02:44.613 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration
+2025-08-28 20:19:24.726 | INFO     | risk.email_service:init_email_service:32 - Email service initialized with custom configuration

@@ -110,18 +110,41 @@ def predict_single():
         
         # Check if this is a new patient or existing patient
         if 'DESYNPUF_ID' in data and data['DESYNPUF_ID'].startswith('NEW_'):
-            # New patient prediction (existing logic)
-            patient_data = pd.DataFrame([data])
-            model = load_model("models/risk_model.pkl")
-            predictions = predict_batch(patient_data, model)
-            prediction_result = predictions.iloc[0].to_dict()
-            
-            logger.info(f"Prediction completed for new patient: {prediction_result}")
-            
-            return jsonify({
-                'success': True,
-                'predictions': prediction_result
-            })
+            # New patient prediction - save to database first
+            try:
+                # Ensure all necessary columns exist in database
+                from risk.db import ensure_prediction_columns
+                ensure_prediction_columns("risk_training")
+                
+                # Create DataFrame with new patient data
+                patient_data = pd.DataFrame([data])
+                
+                # Save new patient data to database first
+                engine = get_engine()
+                patient_data.to_sql('risk_training', engine, if_exists='append', index=False)
+                
+                logger.info(f"New patient data saved to database: {data['DESYNPUF_ID']}")
+                
+                # Now make prediction
+                model = load_model("models/risk_model.pkl")
+                predictions = predict_batch(patient_data, model)
+                prediction_result = predictions.iloc[0].to_dict()
+                
+                # Update the database with predictions
+                from risk.db import update_predictions_in_db
+                update_predictions_in_db(predictions, "risk_training")
+                
+                logger.info(f"Prediction completed and saved for new patient: {prediction_result}")
+                
+                return jsonify({
+                    'success': True,
+                    'predictions': prediction_result,
+                    'message': f'New patient {data["DESYNPUF_ID"]} saved to database with predictions'
+                })
+                
+            except Exception as save_error:
+                logger.error(f"Error saving new patient to database: {save_error}")
+                return jsonify({'error': f'Failed to save patient data: {str(save_error)}'}), 500
         else:
             # Existing patient prediction from database
             desynpuf_id = data.get('DESYNPUF_ID')
